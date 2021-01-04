@@ -154,13 +154,13 @@ def venues():
                     if show.start_time >now:
                         new_upcoming+=1
                 venues_list.append({
-                    'id':Venue.id,
-                    'name':Venue.name,
+                    'id':venue.id,
+                    'name':venue.name,
                     'num_upcoming_shows':new_upcoming
                 })
         data.append({
-            'city':Venue.city,
-            'state':Venue.state,
+            'city':location[0],
+            'state':location[1],
             'venues':venues_list
         })
 
