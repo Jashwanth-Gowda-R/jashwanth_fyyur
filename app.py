@@ -174,13 +174,35 @@ def search_venues():
     # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
     # seach for Hop should return "The Musical Hop".
     # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
+    # response = {
+    #     "count": 1,
+    #     "data": [{
+    #         "id": 2,
+    #         "name": "The Dueling Pianos Bar",
+    #         "num_upcoming_shows": 0,
+    #     }]
+    # }
+    search_item = request.form.get('search_term', '').strip()
+    venues = Venue.query.filter(Venue.name.ilike('%' + search_item + '%')).all()
+    # print(venues)
+
+    venues_list = []
+    now = datetime.now()
+    for venue in venues:
+        venue_show = Show.query.filter_by(venue_id=venue.id).all()
+        new_upcoming = 0
+        for show in venue_show:
+            if show.start_time > now:
+                new_upcoming += 1
+
+        venues_list.append({
+            'id': venue.id,
+            'name': venue.name,
+            'num_upcoming_shows': new_upcoming
+        })
     response = {
-        "count": 1,
-        "data": [{
-            "id": 2,
-            "name": "The Dueling Pianos Bar",
-            "num_upcoming_shows": 0,
-        }]
+        'count': len(venues),
+        'data': venues_list
     }
     return render_template('pages/search_venues.html', results=response,
                            search_term=request.form.get('search_term', ''))
