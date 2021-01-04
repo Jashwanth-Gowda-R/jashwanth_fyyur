@@ -14,6 +14,7 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
 
+
 # ----------------------------------------------------------------------------#
 # App Config.
 # ----------------------------------------------------------------------------#
@@ -113,27 +114,58 @@ def index():
 def venues():
     # TODO: replace with real venues data.
     #       num_shows should be aggregated based on number of upcoming shows per venue.
-    data = [{
-        "city": "San Francisco",
-        "state": "CA",
-        "venues": [{
-            "id": 1,
-            "name": "The Musical Hop",
-            "num_upcoming_shows": 0,
-        }, {
-            "id": 3,
-            "name": "Park Square Live Music & Coffee",
-            "num_upcoming_shows": 1,
-        }]
-    }, {
-        "city": "New York",
-        "state": "NY",
-        "venues": [{
-            "id": 2,
-            "name": "The Dueling Pianos Bar",
-            "num_upcoming_shows": 0,
-        }]
-    }]
+    # data = [{
+    #     "city": "San Francisco",
+    #     "state": "CA",
+    #     "venues": [{
+    #         "id": 1,
+    #         "name": "The Musical Hop",
+    #         "num_upcoming_shows": 0,
+    #     }, {
+    #         "id": 3,
+    #         "name": "Park Square Live Music & Coffee",
+    #         "num_upcoming_shows": 1,
+    #     }]
+    # }, {
+    #     "city": "New York",
+    #     "state": "NY",
+    #     "venues": [{
+    #         "id": 2,
+    #         "name": "The Dueling Pianos Bar",
+    #         "num_upcoming_shows": 0,
+    #     }]
+    # }]
+    venues=Venue.query.all()
+    data =[]
+
+    locations=set()
+    for venue in venues:
+        locations.add(venue.city,venue.state)
+    locations=list(locations)
+    now=datetime.now()
+
+    for location in locations:
+        venues_list=[]
+        for venue in venues:
+            if (venue.city == location[0]) and (venue.state == location[1]):
+                venue_show = Show.query.filter_by(venue_id=venue.id).all()
+                new_upcoming = 0
+                for show in venue_show:
+                    if show.start_time >now:
+                        new_upcoming+=1
+                venues_list.append({
+                    'id':Venue.id,
+                    'name':Venue.name,
+                    'num_upcoming_shows':new_upcoming
+                })
+        data.append({
+            'city':Venue.city,
+            'state':Venue.state,
+            'venues':venues_list
+        })
+
+
+
     return render_template('pages/venues.html', areas=data);
 
 
