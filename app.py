@@ -68,8 +68,9 @@ class Artist(db.Model):
     facebook_link = db.Column(db.String(120))
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
-    seeking_talent = db.Column(db.Boolean, default=False)
+    seeking_venue = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String(120))
+    website = db.Column(db.String(120))
 
     shows = db.relationship('Show', backref='artist', lazy=True)
 
@@ -379,17 +380,6 @@ def create_venue_submission():
                               seeking_talent=seeking_talent, seeking_description=seeking_description,
                               image_link=image_link,genres=genres,
                               website=website, facebook_link=facebook_link)
-            # for genre in genres:
-            #     fetch_genre = Venue.genres.query.filter_by(name=genre).one_or_none()
-            #     if fetch_genre:
-            #         new_venue.genres.append(fetch_genre)
-            #
-            #     else:
-            #         # fetch_genre was None. It's not created yet, so create it
-            #         new_genre = Venue.genres(name=genre)
-            #         db.session.add(new_genre)
-            #         new_venue.genres.append(new_genre)  # Create a new Genre item and append it
-
             db.session.add(new_venue)
             db.session.commit()
         except Exception as e:
@@ -593,12 +583,11 @@ def show_artist(artist_id):
 
     # similar to venue/id
     artist = Artist.query.get(artist_id)
-    # print(venue)
+    # print(artist)
 
     if not artist:
         return redirect(url_for('index'))
     else:
-        genres = [genre.name for genre in artist.genres]
         past_shows = []
         past_shows_count = 0
         upcoming_shows = []
@@ -625,14 +614,13 @@ def show_artist(artist_id):
         data = {
             "id": artist_id,
             "name": artist.name,
-            "genres": genres,
-            "address": artist.address,
+            "genres": artist.genres,
             "city": artist.city,
             "state": artist.state,
             "phone": (artist.phone[:10]),
             "website": artist.website,
             "facebook_link": artist.facebook_link,
-            "seeking_talent": artist.seeking_talent,
+            "seeking_venue": artist.seeking_venue,
             "seeking_description": artist.seeking_description,
             "image_link": artist.image_link,
             "past_shows": past_shows,
@@ -662,6 +650,7 @@ def edit_artist(artist_id):
         "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
     }
     # TODO: populate form with fields from artist with ID <artist_id>
+
     return render_template('forms/edit_artist.html', form=form, artist=artist)
 
 
@@ -715,10 +704,57 @@ def create_artist_submission():
     # called upon submitting the new artist listing form
     # TODO: insert form data as a new Venue record in the db, instead
     # TODO: modify data to be the data object returned from db insertion
+    form = ArtistForm()
+
+    name = form.name.data.strip()
+    city = form.city.data.strip()
+    state = form.state.data
+    phone = form.phone.data
+    genres = form.genres.data  # ['Alternative', 'Classical', 'Country']
+    seeking_venue = True if form.seeking_venue.data == 'Yes' else False
+    seeking_description = form.seeking_description.data.strip()
+    image_link = form.image_link.data.strip()
+    website = form.website.data.strip()
+    facebook_link = form.facebook_link.data.strip()
+
+    # Redirect back to form if errors in form validation
+    if not form.validate():
+        flash(form.errors)
+        return redirect(url_for('create_artist_submission'))
+
+    else:
+        error_in_insert = False
+
+        # Insert form data into DB
+        try:
+            # creates the new artist with all fields but not genre yet
+            new_artist = Artist(name=name, city=city, state=state, phone=phone,
+                                seeking_venue=seeking_venue, seeking_description=seeking_description,
+                                image_link=image_link,genres=genres,
+                                website=website, facebook_link=facebook_link)
+
+
+            db.session.add(new_artist)
+            db.session.commit()
+        except Exception as e:
+            error_in_insert = True
+            print(f'Exception "{e}" in create_artist_submission()')
+            db.session.rollback()
+        finally:
+            db.session.close()
 
     # on successful db insert, flash success
-    flash('Artist ' + request.form['name'] + ' was successfully listed!')
+    # flash('Artist ' + request.form['name'] + ' was successfully listed!')
     # TODO: on unsuccessful db insert, flash an error instead.
+        if not error_in_insert:
+            # on successful db insert, flash success
+            flash('Artist ' + request.form['name'] + ' was successfully listed!')
+            return redirect(url_for('index'))
+        else:
+            flash('An error occurred. Artist ' + name + ' could not be listed.')
+            print("Error in create_artist_submission()")
+            abort(500)
+
     # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
     return render_template('pages/home.html')
 
