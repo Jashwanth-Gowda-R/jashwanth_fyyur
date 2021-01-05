@@ -50,6 +50,7 @@ class Venue(db.Model):
     genres = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String(120))
+    website = db.Column(db.String(120))
 
     shows = db.relationship('Show', backref='venue', lazy=True)
 
@@ -165,10 +166,7 @@ def venues():
             'state':location[1],
             'venues':venues_list
         })
-
-
-
-    return render_template('pages/venues.html', areas=data);
+    return render_template('pages/venues.html', areas=data)
 
 
 @app.route('/venues/search', methods=['POST'])
@@ -380,18 +378,18 @@ def create_venue_submission():
         try:
             new_venue = Venue(name=name, city=city, state=state, address=address, phone=phone,
                               seeking_talent=seeking_talent, seeking_description=seeking_description,
-                              image_link=image_link,
+                              image_link=image_link,genres=genres,
                               website=website, facebook_link=facebook_link)
-            for genre in genres:
-                fetch_genre = Venue.genres.query.filter_by(name=genre).one_or_none()
-                if fetch_genre:
-                    new_venue.genres.append(fetch_genre)
-
-                else:
-                    # fetch_genre was None. It's not created yet, so create it
-                    new_genre = Venue.genres(name=genre)
-                    db.session.add(new_genre)
-                    new_venue.genres.append(new_genre)  # Create a new Genre item and append it
+            # for genre in genres:
+            #     fetch_genre = Venue.genres.query.filter_by(name=genre).one_or_none()
+            #     if fetch_genre:
+            #         new_venue.genres.append(fetch_genre)
+            #
+            #     else:
+            #         # fetch_genre was None. It's not created yet, so create it
+            #         new_genre = Venue.genres(name=genre)
+            #         db.session.add(new_genre)
+            #         new_venue.genres.append(new_genre)  # Create a new Genre item and append it
 
             db.session.add(new_venue)
             db.session.commit()
