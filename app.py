@@ -16,7 +16,6 @@ from werkzeug.exceptions import abort
 
 from forms import *
 
-
 # ----------------------------------------------------------------------------#
 # App Config.
 # ----------------------------------------------------------------------------#
@@ -139,33 +138,33 @@ def venues():
     #         "num_upcoming_shows": 0,
     #     }]
     # }]
-    venues=Venue.query.all()
-    data =[]
+    venues = Venue.query.all()
+    data = []
 
-    locations=set()
+    locations = set()
     for venue in venues:
-        locations.add((venue.city,venue.state))
-    locations=list(locations)
-    now=datetime.now()
+        locations.add((venue.city, venue.state))
+    locations = list(locations)
+    now = datetime.now()
 
     for location in locations:
-        venues_list=[]
+        venues_list = []
         for venue in venues:
             if (venue.city == location[0]) and (venue.state == location[1]):
                 venue_show = Show.query.filter_by(venue_id=venue.id).all()
                 new_upcoming = 0
                 for show in venue_show:
-                    if show.start_time >now:
-                        new_upcoming+=1
+                    if show.start_time > now:
+                        new_upcoming += 1
                 venues_list.append({
-                    'id':venue.id,
-                    'name':venue.name,
-                    'num_upcoming_shows':new_upcoming
+                    'id': venue.id,
+                    'name': venue.name,
+                    'num_upcoming_shows': new_upcoming
                 })
         data.append({
-            'city':location[0],
-            'state':location[1],
-            'venues':venues_list
+            'city': location[0],
+            'state': location[1],
+            'venues': venues_list
         })
     return render_template('pages/venues.html', areas=data)
 
@@ -368,17 +367,15 @@ def create_venue_submission():
     website = form.website.data.strip()
     facebook_link = form.facebook_link.data.strip()
 
-    # Redirect back to form if errors in form validation
     if not form.validate():
         flash(form.errors)
         return redirect(url_for('create_venue_submission'))
-
     else:
         error_in_insert = False
         try:
             new_venue = Venue(name=name, city=city, state=state, address=address, phone=phone,
                               seeking_talent=seeking_talent, seeking_description=seeking_description,
-                              image_link=image_link,genres=genres,
+                              image_link=image_link, genres=genres,
                               website=website, facebook_link=facebook_link)
             db.session.add(new_venue)
             db.session.commit()
@@ -388,11 +385,11 @@ def create_venue_submission():
             db.session.rollback()
         finally:
             db.session.close()
-    # on successful db insert, flash success
-    # flash('Venue ' + request.form['name'] + ' was successfully listed!')
-    # TODO: on unsuccessful db insert, flash an error instead.
-    # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
-    # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
+        # on successful db insert, flash success
+        # flash('Venue ' + request.form['name'] + ' was successfully listed!')
+        # TODO: on unsuccessful db insert, flash an error instead.
+        # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
+        # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
         if not error_in_insert:
             # on successful db insert, flash success
             flash('Venue ' + request.form['name'] + ' was successfully listed!')
@@ -400,7 +397,6 @@ def create_venue_submission():
         else:
             flash('An error occurred. Venue ' + name + ' could not be listed.')
             print("Error in create_venue_submission()")
-            # return redirect(url_for('create_venue_submission'))
             abort(500)
     return render_template('pages/home.html')
 
@@ -487,18 +483,18 @@ def search_artists():
     for artist in artists:
         artist_show = Show.query.filter_by(artist_id=artist.id).all()
         new_upcoming = 0
-        for show in  artist_show:
+        for show in artist_show:
             if show.start_time > now:
                 new_upcoming += 1
 
         artist_show.append({
             'id': artist.id,
-            'name':artist.name,
+            'name': artist.name,
             'num_upcoming_shows': new_upcoming
         })
     response = {
         'count': len(artists),
-        'data':artists_list
+        'data': artists_list
     }
     return render_template('pages/search_artists.html', results=response,
                            search_term=request.form.get('search_term', ''))
@@ -662,7 +658,7 @@ def edit_artist(artist_id):
         "genres": artist.genres,
         "city": artist.city,
         "state": artist.state,
-        "phone": (artist.phone[:10] ),
+        "phone": (artist.phone[:10]),
         "website": artist.website,
         "facebook_link": artist.facebook_link,
         "seeking_venue": artist.seeking_venue,
@@ -726,7 +722,7 @@ def edit_artist_submission(artist_id):
             flash('An error occurred. Artist ' + name + ' could not be updated.')
             print("Error in edit_artist_submission()")
             abort(500)
-    return redirect(url_for('show_artist',form=form, artist_id=artist_id))
+    return redirect(url_for('show_artist', form=form, artist_id=artist_id))
 
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
@@ -747,13 +743,10 @@ def edit_venue(venue_id):
     #     "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
     # }
     # TODO: populate form with values from venue with ID <venue_id>
-    venue = Venue.query.get(
-        venue_id)  # Returns object based on primary key, or None.  Guessing get is faster than filter_by
+    venue = Venue.query.get(venue_id)
     if not venue:
-        # User typed in a URL that doesn't exist, redirect home
         return redirect(url_for('index'))
     else:
-        # Otherwise, valid venue.  We can prepopulate the form with existing data like this:
         form = VenueForm(obj=venue)
 
     venue = {
@@ -832,7 +825,6 @@ def edit_venue_submission(venue_id):
     return render_template('forms/edit_venue.html', form=form, venue=venue)
 
 
-
 #  Create Artist
 #  ----------------------------------------------------------------
 
@@ -860,7 +852,6 @@ def create_artist_submission():
     website = form.website.data.strip()
     facebook_link = form.facebook_link.data.strip()
 
-    # Redirect back to form if errors in form validation
     if not form.validate():
         flash(form.errors)
         return redirect(url_for('create_artist_submission'))
@@ -868,12 +859,10 @@ def create_artist_submission():
     else:
         error_in_insert = False
 
-        # Insert form data into DB
         try:
-            # creates the new artist with all fields but not genre yet
             new_artist = Artist(name=name, city=city, state=state, phone=phone,
                                 seeking_venue=seeking_venue, seeking_description=seeking_description,
-                                image_link=image_link,genres=genres,
+                                image_link=image_link, genres=genres,
                                 website=website, facebook_link=facebook_link)
             db.session.add(new_artist)
             db.session.commit()
@@ -884,9 +873,9 @@ def create_artist_submission():
         finally:
             db.session.close()
 
-    # on successful db insert, flash success
-    # flash('Artist ' + request.form['name'] + ' was successfully listed!')
-    # TODO: on unsuccessful db insert, flash an error instead.
+        # on successful db insert, flash success
+        # flash('Artist ' + request.form['name'] + ' was successfully listed!')
+        # TODO: on unsuccessful db insert, flash an error instead.
         if not error_in_insert:
             # on successful db insert, flash success
             flash('Artist ' + request.form['name'] + ' was successfully listed!')
@@ -895,7 +884,6 @@ def create_artist_submission():
             flash('An error occurred. Artist ' + name + ' could not be listed.')
             print("Error in create_artist_submission()")
             abort(500)
-
     # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
     return render_template('pages/home.html')
 
@@ -944,6 +932,17 @@ def shows():
     #     "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
     #     "start_time": "2035-04-15T20:00:00.000Z"
     # }]
+    data = []
+    shows = Show.query.all()
+    for show in shows:
+        data.append({
+            "venue_id": show.venue.id,
+            "venue_name": show.venue.name,
+            "artist_id": show.artist.id,
+            "artist_name": show.artist.name,
+            "artist_image_link": show.artist.image_link,
+            "start_time": format_datetime(str(show.start_time))
+        })
     return render_template('pages/shows.html', shows=data)
 
 
@@ -958,10 +957,33 @@ def create_shows():
 def create_show_submission():
     # called to create new shows in the db, upon submitting new show listing form
     # TODO: insert form data as a new Show record in the db, instead
+    form = ShowForm()
+
+    artist_id = form.artist_id.data.strip()
+    venue_id = form.venue_id.data.strip()
+    start_time = form.start_time.data
+
+    error_in_insert = False
+
+    try:
+        new_show = Show(start_time=start_time, artist_id=artist_id, venue_id=venue_id)
+        db.session.add(new_show)
+        db.session.commit()
+    except:
+        error_in_insert = True
+        print(f'Exception "{e}" in create_show_submission()')
+        db.session.rollback()
+    finally:
+        db.session.close()
 
     # on successful db insert, flash success
-    flash('Show was successfully listed!')
+    # flash('Show was successfully listed!')
     # TODO: on unsuccessful db insert, flash an error instead.
+    if error_in_insert:
+        flash(f'An error occurred.  Show could not be listed.')
+        print("Error in create_show_submission()")
+    else:
+        flash('Show was successfully listed!')
     # e.g., flash('An error occurred. Show could not be listed.')
     # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
     return render_template('pages/home.html')
