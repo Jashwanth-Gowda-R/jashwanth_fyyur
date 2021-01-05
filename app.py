@@ -143,7 +143,7 @@ def venues():
 
     locations=set()
     for venue in venues:
-        locations.add(venue.city,venue.state)
+        locations.add((venue.city,venue.state))
     locations=list(locations)
     now=datetime.now()
 
