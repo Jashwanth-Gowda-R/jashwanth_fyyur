@@ -296,7 +296,6 @@ def show_venue(venue_id):
     if not venue:
         return redirect(url_for('index'))
     else:
-        genres = [genre.name for genre in venue.genres]
         past_shows = []
         past_shows_count = 0
         upcoming_shows = []
@@ -323,7 +322,7 @@ def show_venue(venue_id):
         data = {
             "id": venue_id,
             "name": venue.name,
-            "genres": genres,
+            "genres": venue.genres,
             "address": venue.address,
             "city": venue.city,
             "state": venue.state,
